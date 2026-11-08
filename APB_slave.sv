@@ -14,6 +14,9 @@ module apb_slave (
 );
 
     logic [31:0] register_with_some_name;
+    logic [31:0] register_date;           // 0x4 — дата
+    logic [31:0] register_surname;        // 0x8 — фамилия
+    logic [31:0] register_name;           // 0xC — имя
 
     // APB FSM
     enum logic [1:0] {
@@ -28,7 +31,10 @@ module apb_slave (
             pslverr                 <= 1'b0;
             pready                  <= 1'b0;
             register_with_some_name <= 32'h0;
-            apb_st                  <= APB_SETUP;
+            register_date           <= 32'h0;
+            register_surname        <= 32'h0;
+            register_name           <= 32'h0;
+            apb_st                  <= APB_SETUP;           
         end else begin
             case (apb_st)
                 APB_SETUP: begin: apb_setup_st
@@ -62,11 +68,17 @@ module apb_slave (
                                 $display("[SLAVE] WRITE 0x0: pwdata=0x%08h -> reg=0x%08h",
                                     pwdata,  (pwdata[0] == 1'b0) ? 32'hAAAA_AAAA : 32'h5555_5555);
                             end
-                            8'h4: begin
-                                // запись в регистр со смещением 4
+                            8'h4: begin   // запись в регистр со смещением 4
+                                register_date <= pwdata;             // дата
+                                $display("[SLAVE] WRITE 0x4 (date): 0x%08h", pwdata);
                             end
-                            8'h8: begin
-                                // запись в регистр со смещением 8
+                            8'h8: begin // запись в регистр со смещением 8
+                                register_surname <= pwdata;   // surname
+                                $display("[SLAVE] WRITE 0x8 (surname): 0x%08h", pwdata);
+                            end
+                            8'hC: begin // запись в регистр со смещением 8
+                                register_name <= pwdata;        // name
+                                $display("[SLAVE] WRITE 0xC (name): 0x%08h", pwdata);
                             end
                             default: begin
                                 pslverr <= 1'b1;
@@ -87,11 +99,17 @@ module apb_slave (
                                 // можно вывести просто так, т.к мы читаем установившиеся раньше состояние 
                                 $display("[SLAVE] READ 0x0: reg=0x%08h", register_with_some_name);
                             end
-                            8'h4: begin
-                                // запись из регистра со смещением 4
+                            8'h4: begin  // запись из регистра со смещением 4
+                                prdata <= register_date;             // дата
+                                $display("[SLAVE] READ 0x4 (date): 0x%08h", register_date);
                             end
-                            8'h8: begin
-                                // запись из регистра со смещением 8
+                            8'h8: begin   // запись из регистра со смещением 8
+                                prdata <= register_surname;             // дата
+                                $display("[SLAVE] READ 0x8 (surname): 0x%08h", register_surname);
+                            end
+                            8'hC: begin   // запись из регистра со смещением C(10)
+                                prdata <= register_name;             // дата
+                                $display("[SLAVE] READ 0xC (name): 0x%08h", register_name);
                             end
                             default: begin
                                 pslverr <= 1'b1;

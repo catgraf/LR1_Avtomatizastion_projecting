@@ -93,18 +93,50 @@ module TB;
         presetn = 1'b1;
     repeat (5) @(posedge pclk);
 
-    // Тест 1: Запись и чтение 32'h12345678
+    // Тест 1: адрес 0x0 — номер в группе 13 (LSB=1 -> ожидаем 55555555 по заданию 8)
     address = p_device_offset + 0;
-    data_to_device = 32'h12345678;
+    data_to_device = 32'h0000_000D;
     apb_write(address, data_to_device);
     apb_read(address, data_from_device);
     $display("Addr= 0x%h, write data 0x%h, read data 0x%h", address, data_to_device, data_from_device);
+    if (data_from_device !== 32'h5555_5555) //используется !== для получения однозначного результата
+        $error("[TB] FAIL: addr 0x0, expected 0x55555555, got 0x%08h", data_from_device);
+    else
+        $display("[TB] PASS: addr 0x0");
+    
+    // Тест 2: адрес 0x4 — дата 08.11.2026 в BCD
+    address = p_device_offset + 4;
+    data_to_device = 32'h0811_2026;
+    apb_write(address, data_to_device);
+    apb_read(address, data_from_device);
+    $display("Addr= 0x%h, write data 0x%h, read data 0x%h", address, data_to_device, data_from_device);
+    if (data_from_device !== 32'h0811_2026)
+        $error("[TB] FAIL: addr 0x4, expected 0x08112026, got 0x%08h", data_from_device);
+    else
+        $display("[TB] PASS: addr 0x4");
 
-    // Тест 2: Запись и чтение 32'h1
-    data_to_device = 32'h1;
+    // Тест 3: адрес 0x8 — фамилия "Fran" в ASCII (46 72 61 6E)
+    address = p_device_offset + 8;
+    data_to_device = 32'h4672_616E;
     apb_write(address, data_to_device);
     apb_read(address, data_from_device);
     $display("Addr= 0x%h, write data 0x%h, read data 0x%h", address, data_to_device, data_from_device);
+    if (data_from_device !== 32'h4672_616E)
+        $error("[TB] FAIL: addr 0x8, expected 0x4672616E, got 0x%08h", data_from_device);
+    else
+        $display("[TB] PASS: addr 0x8");
+    
+    // Тест 4: адрес 0xC — имя "Mari" в ASCII (4D 61 72 69)
+    address = p_device_offset + 12;
+    data_to_device = 32'h4D61_7269;
+    apb_write(address, data_to_device);
+    apb_read(address, data_from_device);
+    $display("Addr= 0x%h, write data 0x%h, read data 0x%h", address, data_to_device, data_from_device);
+    if (data_from_device !== 32'h4D61_7269)
+        $error("[TB] FAIL: addr 0xC, expected 0x4D617269, got 0x%08h", data_from_device);
+    else
+        $display("[TB] PASS: addr 0xC");
+
     // неверный адрес -> pslverr=1, затем верный -> pslverr должен сброситься
     address = p_device_offset + 32'h10;  // 0x10 не декодируется -> default
     data_to_device = 32'hDEAD_BEEF;
