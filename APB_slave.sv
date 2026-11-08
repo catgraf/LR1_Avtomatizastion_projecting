@@ -1,3 +1,5 @@
+`timescale 1ns/1ps
+
 module apb_slave (
     input               pclk,                     // синхросигнал
     input               presetn,                  // сигнал сброса (инверсный)
@@ -57,8 +59,8 @@ module apb_slave (
                                 end else begin
                                     register_with_some_name <= 32'h5555_5555;
                                 end
-                                $display("[SLAVE] WRITE 0x0: pwdata=0x%08h -> reg=0x%08h", 
-                                        pwdata, register_with_some_name);
+                                $display("[SLAVE] WRITE 0x0: pwdata=0x%08h -> reg=0x%08h",
+                                    pwdata,  (pwdata[0] == 1'b0) ? 32'hAAAA_AAAA : 32'h5555_5555);
                             end
                             8'h4: begin
                                 // запись в регистр со смещением 4
