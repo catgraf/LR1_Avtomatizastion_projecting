@@ -1,3 +1,5 @@
+`timescale 1ns/1ps //единица времени — 1 нс, точность — 1 пс
+
 module apb_top (
     input               pclk,     // синхросигнал
     input               presetn,  // сигнал сброса (инверсный)
